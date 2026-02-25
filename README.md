@@ -1,16 +1,90 @@
-# zavisoft_flutter_task
+How Horizontal Swipe Was Implemented
 
-A new Flutter project.
+Horizontal swipe is handled by:
 
-## Getting Started
+TabBarView(
+  controller: _tabController,
+  children: [...]
+)
 
-This project is a starting point for a Flutter application.
+TabBarView provides built-in horizontal gesture detection.
 
-A few resources to get you started if this is your first Flutter project:
+It is synced with TabBar using the same TabController.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Horizontal swiping only switches tabs.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+It does not control vertical scrolling.
+
+2️⃣ Who Owns the Vertical Scroll (and Why)
+✅ The ONLY vertical scroll owner is:
+
+NestedScrollView
+
+Why:
+
+The screen must behave like a single continuous scroll.
+
+The collapsible header + pinned tab bar must scroll together.
+
+Pull-to-refresh must work from any tab.
+
+Switching tabs must not reset scroll position.
+
+Inner product lists use:
+
+NeverScrollableScrollPhysics()
+
+This prevents multiple vertical scrollables and avoids:
+
+Scroll conflicts
+
+Gesture competition
+
+Jitter
+
+Scroll jumps
+
+3️⃣ Trade-offs / Limitations of This Approach
+✅ Advantages
+
+Smooth coordinated scrolling
+
+Sticky tab works correctly
+
+No gesture conflicts
+
+Scroll position preserved across tabs
+
+Pull-to-refresh works globally
+
+⚠️ Trade-offs
+
+Inner lists cannot scroll independently
+
+All vertical movement is controlled by NestedScrollView.
+
+More complex than simple ListView
+
+Requires Sliver understanding.
+
+Pagination needs careful implementation
+
+Infinite scroll must be triggered via the parent scroll controller.
+
+Heavy UI inside tabs may affect performance
+
+Since all content participates in one scroll pipeline.
+
+Approach Was Chosen
+
+Instead of forcing multiple scrollables (which causes jitter and broken gestures), this design:
+
+Respects Flutter’s scroll architecture
+
+Uses Slivers correctly
+
+Keeps gesture ownership explicit
+
+Avoids fragile hacks
+
+It is scalable and production-safe.
